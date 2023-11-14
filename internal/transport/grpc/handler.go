@@ -3,12 +3,12 @@ package grpc
 import (
 	"context"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	user "user-management/internal"
 	usertransport "user-management/internal/transport"
+	logger "user-management/internal/util"
 )
 
 type GrpcServer struct {
@@ -109,8 +109,8 @@ func getError(err error) error {
 	}
 }
 
-func newServerFinalizer(logger log.Logger) kitgrpc.ServerFinalizerFunc {
+func newServerFinalizer(lgr log.Logger) kitgrpc.ServerFinalizerFunc {
 	return func(ctx context.Context, err error) {
-		level.Info(logger).Log("status", err)
+		logger.Info(lgr, "status", err)
 	}
 }

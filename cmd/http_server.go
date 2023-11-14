@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 	"net/http"
@@ -23,6 +22,7 @@ import (
 	userServ "user-management/internal/implementation"
 	usertansport "user-management/internal/transport"
 	httpusertransport "user-management/internal/transport/http"
+	logger "user-management/internal/util"
 )
 
 const (
@@ -51,7 +51,7 @@ func newHttpServerCommand(cfg config.Config, lgr log.Logger) *cobra.Command {
 				// Connect to the "ordersdb" database
 				db, err = postgress.InitDB(cfg.DB, lgr)
 				if err != nil {
-					level.Error(lgr).Log("exit", err)
+					logger.Error(lgr, "exit", err)
 					os.Exit(-1)
 				}
 			}
@@ -61,7 +61,7 @@ func newHttpServerCommand(cfg config.Config, lgr log.Logger) *cobra.Command {
 			{
 				repository, err := repo.NewUserSQLRepository(db, lgr)
 				if err != nil {
-					level.Error(lgr).Log("exit", err)
+					logger.Error(lgr, "exit", err)
 					os.Exit(-1)
 				}
 				svc, err = userServ.NewService(repository, lgr)
@@ -98,13 +98,12 @@ func newHttpServerCommand(cfg config.Config, lgr log.Logger) *cobra.Command {
 				return nil
 			})
 
-			level.Info(lgr).Log("HTTP server successfully started.")
+			logger.Info(lgr, "HTTP server successfully started.")
 
 			// Make sure to stop the http server when the context is canceled.
 			group.Go(func() error {
 				<-ctx.Done()
-				level.Info(lgr).Log("gracefully stopping HTTP server...")
-
+				logger.Info(lgr, "gracefully stopping HTTP server...")
 				ctxShutdown, cancel := context.WithTimeout(ctx, shutdownTimeout)
 				defer cancel()
 
@@ -112,7 +111,8 @@ func newHttpServerCommand(cfg config.Config, lgr log.Logger) *cobra.Command {
 					return fmt.Errorf("HTTP server shutdown failed: %w", err)
 				}
 
-				level.Info(lgr).Log("HTTP server gracefully stopped.")
+				logger.Info(lgr, "HTTP server gracefully stopped.")
+
 				return nil
 			})
 

@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+
 	"github.com/go-kit/kit/transport"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	"net/http"
 	user "user-management/internal"
 	usertransport "user-management/internal/transport"
+	logger "user-management/internal/util"
 )
 
 var (
@@ -118,8 +119,9 @@ func codeFrom(err error) int {
 	}
 }
 
-func newServerFinalizer(logger log.Logger) kithttp.ServerFinalizerFunc {
+func newServerFinalizer(lgr log.Logger) kithttp.ServerFinalizerFunc {
 	return func(ctx context.Context, code int, r *http.Request) {
-		level.Info(logger).Log("status", code, "path", r.RequestURI, "method", r.Method)
+		logger.Info(lgr, "status", code, "path", r.RequestURI, "method", r.Method)
+
 	}
 }

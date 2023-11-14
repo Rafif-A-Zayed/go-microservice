@@ -3,11 +3,10 @@ package implementation
 import (
 	"context"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
 	"github.com/gofrs/uuid"
 	"time"
-
 	usersvc "user-management/internal"
+	logger "user-management/internal/util"
 )
 
 // service implements the Order Service
@@ -27,7 +26,7 @@ func NewService(rep usersvc.Repository, logger log.Logger) (*Service, error) {
 
 // Create makes an order
 func (s *Service) Create(ctx context.Context, user usersvc.User) (string, error) {
-	logger := log.With(s.logger, "method", "Create")
+	lgr := log.With(s.logger, "method", "Create")
 	uuid1, _ := uuid.NewV4()
 	id := uuid1.String()
 	user.ID = id
@@ -37,7 +36,7 @@ func (s *Service) Create(ctx context.Context, user usersvc.User) (string, error)
 	user.CreatedOn = time.Now().Unix()
 
 	if err := s.repository.CreateUser(ctx, user); err != nil {
-		level.Error(logger).Log("err", err)
+		logger.Error(lgr, "err", err)
 		return "", usersvc.ErrCmdRepository
 	}
 	return id, nil
@@ -45,8 +44,8 @@ func (s *Service) Create(ctx context.Context, user usersvc.User) (string, error)
 
 // GetByID returns an order given by id
 func (s *Service) GetByID(ctx context.Context, id string) (usersvc.User, error) {
-	logger := log.With(s.logger, "method", "GetByID")
-	level.Info(logger).Log(id)
+	lgr := log.With(s.logger, "method", "GetByID")
+	logger.Info(lgr, id)
 	user := usersvc.User{
 		ID:         "",
 		CustomerID: "U12336286",
@@ -66,8 +65,8 @@ func (s *Service) GetByID(ctx context.Context, id string) (usersvc.User, error) 
 
 // ChangeStatus changes the status of an order
 func (s *Service) ChangeStatus(ctx context.Context, id string, status string) error {
-	logger := log.With(s.logger, "method", "ChangeStatus")
-	level.Info(logger).Log(id, status)
+	lgr := log.With(s.logger, "method", "ChangeStatus")
+	logger.Info(lgr, "user", id, "status", status)
 	/*	if err := s.repository.ChangeOrderStatus(ctx, id, status); err != nil {
 		level.Error(logger).Log("err", err)
 		return ordersvc.ErrCmdRepository

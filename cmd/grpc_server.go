@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -22,6 +22,7 @@ import (
 	"user-management/internal/middleware"
 	usertansport "user-management/internal/transport"
 	grpchandler "user-management/internal/transport/grpc"
+	logger "user-management/internal/util"
 )
 
 func newGRPCServerCmd(cfg config.Config, lgr log.Logger) *cobra.Command {
@@ -39,7 +40,7 @@ func newGRPCServerCmd(cfg config.Config, lgr log.Logger) *cobra.Command {
 				// Connect to the "ordersdb" database
 				db, err = postgress.InitDB(cfg.DB, lgr)
 				if err != nil {
-					level.Error(lgr).Log("exit", err)
+					logger.Error(lgr, "exit", err)
 					os.Exit(-1)
 				}
 			}
@@ -49,7 +50,7 @@ func newGRPCServerCmd(cfg config.Config, lgr log.Logger) *cobra.Command {
 			{
 				repository, err := repo.NewUserSQLRepository(db, lgr)
 				if err != nil {
-					level.Error(lgr).Log("exit", err)
+					logger.Error(lgr, "exit", err)
 					os.Exit(-1)
 				}
 				svc, err = userServ.NewService(repository, lgr)
@@ -86,13 +87,13 @@ func newGRPCServerCmd(cfg config.Config, lgr log.Logger) *cobra.Command {
 					return fmt.Errorf("unable to start gRPC server: %w", err)
 				}
 
-				level.Info(lgr).Log("transport", "gRPC", "addr", "9090")
+				logger.Info(lgr, "transport", "gRPC", "addr", "9090")
 				return nil
 			})
 
 			group.Go(func() error {
 				<-ctx.Done()
-				level.Info(lgr).Log(ctx, "gracefully stopping gRPC server...")
+				logger.Info(lgr, ctx, "gracefully stopping gRPC server...")
 				grpcServer.GracefulStop()
 
 				return nil
