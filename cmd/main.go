@@ -40,6 +40,7 @@ func main() {
 
 	rootCmd := newRootCmd()
 	rootCmd.AddCommand(
+		newGRPCServerCmd(cfg, logger),
 		newHttpServerCommand(cfg, logger),
 	)
 
